@@ -5,13 +5,23 @@ const http = require("http").createServer(app);
 const PORT = process.env.PORT || 3001;
 const path = require("path");
 
-const io = require("socket.io")(http, {
-  transports: ["websocket", "polling"],
+// const io = require("socket.io")(http, {
+//   transports: ["websocket", "polling"],
+//   cors: {
+//     origin: "*", // Reemplaza con tu URL de frontend
+//     methods: ["GET", "POST"],
+//     allowedHeaders: ["Content-Type"],
+//     credentials: true, // Si necesitas compartir cookies u otras credenciales
+//   },
+// });
+
+const { Server } = require("socket.io");
+
+const io = new Server({
   cors: {
-    origin: "https://client-videocall.vercel.app", // Reemplaza con tu URL de frontend
+    // origin: "http://localhost:5173",
+    origin: "*",
     methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type"],
-    credentials: true, // Si necesitas compartir cookies u otras credenciales
   },
 });
 
