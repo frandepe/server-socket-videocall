@@ -234,11 +234,11 @@ import express from "express";
 import http from "http";
 import cors from "cors";
 import { createServer } from "http";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
+// import { fileURLToPath } from "url";
+// import { dirname } from "path";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = dirname(__filename);
 
 const app = express();
 const server = createServer(app);
@@ -252,16 +252,19 @@ app.use(
 );
 
 // Importar socket.io de manera compatible con ES modules
-import { Server } from "socket.io";
+// import { Server } from "socket.io";
 
 // Almacenar usuarios conectados
 const socketList = {};
 
 // Crear servidor socket.io
-const io = new Server(server, {
+const io = require("socket.io")("https://client-videocall.vercel.app", {
+  transports: ["websocket", "polling"],
   cors: {
-    origin: "https://client-videocall.vercel.app",
+    origin: "*", // Reemplaza con tu URL de frontend
     methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
+    credentials: true, // Si necesitas compartir cookies u otras credenciales
   },
 });
 
