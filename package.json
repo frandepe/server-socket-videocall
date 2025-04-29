@@ -3,10 +3,6 @@
   "version": "1.0.0",
   "description": "video call server",
   "main": "index.js",
-  "type": "module",
-  "engines": {
-    "node": "16.20.2"
-  },
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
@@ -20,5 +16,8 @@
     "morgan": "^1.10.0",
     "nodemon": "^2.0.4",
     "socket.io": "^2.3.0"
+  },
+  "engines": {
+    "node": "16.20.2"
   }
 }
