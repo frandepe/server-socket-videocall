@@ -231,14 +231,9 @@
 // }
 
 import express from "express";
-import http from "http";
-import cors from "cors";
 import { createServer } from "http";
-// import { fileURLToPath } from "url";
-// import { dirname } from "path";
-
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = dirname(__filename);
+import { Server } from "socket.io";
+import cors from "cors";
 
 const app = express();
 const server = createServer(app);
@@ -251,20 +246,14 @@ app.use(
   })
 );
 
-// Importar socket.io de manera compatible con ES modules
-// import { Server } from "socket.io";
-
 // Almacenar usuarios conectados
 const socketList = {};
 
 // Crear servidor socket.io
-const io = require("socket.io")("https://client-videocall.vercel.app", {
-  transports: ["websocket", "polling"],
+const io = new Server(server, {
   cors: {
-    origin: "*", // Reemplaza con tu URL de frontend
+    origin: "https://client-videocall.vercel.app",
     methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type"],
-    credentials: true, // Si necesitas compartir cookies u otras credenciales
   },
 });
 
@@ -280,7 +269,7 @@ io.on("connection", (socket) => {
     let error = false;
     console.log("BE-check-user", roomId, userName);
 
-    // Obtener clientes en la sala
+    // Obtener clientes en la sala - API actualizada para Socket.io v4
     const clients = io.sockets.adapter.rooms.get(roomId) || new Set();
 
     // Verificar si el nombre de usuario ya existe en la sala
@@ -299,7 +288,7 @@ io.on("connection", (socket) => {
     socket.join(roomId);
     socketList[socket.id] = { userName, video: true, audio: true };
 
-    // Obtener todos los usuarios en la sala
+    // Obtener todos los usuarios en la sala - API actualizada para Socket.io v4
     const users = {};
     const clients = io.sockets.adapter.rooms.get(roomId) || new Set();
 
@@ -328,7 +317,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("BE-send-message", ({ roomId, msg, sender }) => {
-    io.in(roomId).emit("FE-receive-message", { msg, sender });
+    io.to(roomId).emit("FE-receive-message", { msg, sender });
   });
 
   socket.on("BE-leave-room", ({ roomId, leaver }) => {
