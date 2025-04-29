@@ -232,14 +232,18 @@
 
 import express from "express";
 import http from "http";
-import pkg from "socket.io";
 import cors from "cors";
+import { createServer } from "http";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 
-const { Server } = pkg;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const app = express();
-const server = http.createServer(app);
+const server = createServer(app);
 
-// Enable CORS
+// Habilitar CORS
 app.use(
   cors({
     origin: "https://client-videocall.vercel.app",
@@ -247,7 +251,13 @@ app.use(
   })
 );
 
-// Create a socket.io server
+// Importar socket.io de manera compatible con ES modules
+import { Server } from "socket.io";
+
+// Almacenar usuarios conectados
+const socketList = {};
+
+// Crear servidor socket.io
 const io = new Server(server, {
   cors: {
     origin: "https://client-videocall.vercel.app",
@@ -255,25 +265,22 @@ const io = new Server(server, {
   },
 });
 
-// Store connected users
-const socketList = {};
-
-// Socket.io connection handling
+// Manejo de conexiones Socket.io
 io.on("connection", (socket) => {
-  console.log(`New User connected: ${socket.id}`);
+  console.log(`Nuevo usuario conectado: ${socket.id}`);
 
   socket.on("disconnect", () => {
-    console.log("User disconnected!");
+    console.log("Usuario desconectado!");
   });
 
   socket.on("BE-check-user", ({ roomId, userName }) => {
     let error = false;
     console.log("BE-check-user", roomId, userName);
 
-    // Get clients in the room
+    // Obtener clientes en la sala
     const clients = io.sockets.adapter.rooms.get(roomId) || new Set();
 
-    // Check if username already exists in the room
+    // Verificar si el nombre de usuario ya existe en la sala
     for (const clientId of clients) {
       if (socketList[clientId]?.userName === userName) {
         error = true;
@@ -289,7 +296,7 @@ io.on("connection", (socket) => {
     socket.join(roomId);
     socketList[socket.id] = { userName, video: true, audio: true };
 
-    // Get all users in the room
+    // Obtener todos los usuarios en la sala
     const users = {};
     const clients = io.sockets.adapter.rooms.get(roomId) || new Set();
 
@@ -318,7 +325,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("BE-send-message", ({ roomId, msg, sender }) => {
-    io.sockets.in(roomId).emit("FE-receive-message", { msg, sender });
+    io.in(roomId).emit("FE-receive-message", { msg, sender });
   });
 
   socket.on("BE-leave-room", ({ roomId, leaver }) => {
@@ -341,13 +348,13 @@ io.on("connection", (socket) => {
   });
 });
 
-// Basic routes
+// Rutas básicas
 app.get("/", (req, res) => {
-  res.send("Video call server is running");
+  res.send("El servidor de videollamadas está funcionando");
 });
 
-// Start the server
+// Iniciar el servidor
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Servidor ejecutándose en el puerto ${PORT}`);
 });
